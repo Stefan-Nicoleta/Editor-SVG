@@ -17,15 +17,52 @@
         <main>
             <div class="editor-container">
                 <div class="toolbar">
-                    <button id="lineBtn">Linie</button>
-                    <button id="rectBtn">Dreptunghi</button>
-                    <button id="ellipseBtn">Elipsă</button>
+                    <!-- CERINȚA 1: Suport pentru forme geometrice de bază -->
+                    <div class="shape-buttons">
+                        <button id="lineBtn">Linie</button>
+                        <button id="rectBtn">Dreptunghi</button>
+                        <button id="ellipseBtn">Elipsă</button>
+                    </div>
+
+                    <!-- CERINȚA 2: Controale pentru culoare și grosime -->
+                    <div class="style-controls">
+                        <div class="control-group">
+                            <label for="strokeColor">Culoare contur:</label>
+                            <input type="color" id="strokeColor" value="#000000">
+                        </div>
+                        <div class="control-group">
+                            <label for="fillColor">Culoare fundal:</label>
+                            <input type="color" id="fillColor" value="#ffffff">
+                        </div>
+                        <div class="control-group">
+                            <label for="strokeWidth">Grosime:</label>
+                            <input type="range" id="strokeWidth" min="1" max="10" value="2">
+                            <span id="strokeWidthValue">2</span>px
+                        </div>
+                    </div>
+
+                    <!-- CERINȚA 3: Controale pentru editare -->
+                    <div class="edit-controls">
+                        <input type="radio" name="Culoare" id="selectBtn" checked>
+                        <label for="selectBtn">Selectează</label>
+                        <input type="radio" name="Culoare" id="deleteBtn">
+                        <label for="deleteBtn">Șterge</label>
+                        <input type="radio" name="Culoare" id="undoBtn">
+                        <label for="undoBtn">Anulează</label>
+                    </div>
                 </div>
+                <!-- CERINȚA NOUĂ: Mesaj de avertizare -->
+                <div id="warningMessage" class="warning-message">
+                    Selectați un instrument de desenare înainte de a începe!
+                </div>
+
                 <div class="canvas-container">
                     <svg id="svgContainer" width="800" height="600"></svg>
                 </div>
             </div>
         </main>
+        
+
     </div>
     <script src="index.js"></script>
 </body>

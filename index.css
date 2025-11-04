@@ -45,48 +45,155 @@ main {
     margin-bottom: 30px;
 }
 
+/* CERINȚA 1: Stiluri pentru toolbar și butoanele de forme */
 .toolbar {
     margin-bottom: 20px;
     padding: 15px;
     background-color: #f8f9fa;
     border-radius: 6px;
+}
+
+.shape-buttons {
+    margin-bottom: 15px;
     text-align: center;
 }
 
+/* CERINȚA 2: Stiluri pentru controalele de personalizare */
+.style-controls {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    padding: 20px 0;
+    margin: 15px 0;
+    background-color: #f0f0f0;
+    border-radius: 8px;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+}
+
+/* CERINȚA 3: Stiluri pentru controale de editare */
+.edit-controls {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    padding-top: 15px;
+}
+
+/* Stil pentru elementele selectate */
+.selected-element {
+    stroke-dasharray: 5;
+    cursor: move;
+}
+
+/* CERINȚA NOUĂ: Stiluri pentru mesajul de avertizare */
+.warning-message {
+    display: none; /* Ascuns implicit */
+    background-color: #edadad;
+    color: #000000;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 4px;
+    text-align: center;
+    font-weight: bold;
+    animation: fadeOut 2s ease-in-out forwards;
+}
+
+@keyframes fadeOut {
+    0% { opacity: 1; }
+    70% { opacity: 1; }
+    100% { opacity: 0; }
+}
+
+.control-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background-color: white;
+    padding: 10px 15px;
+    border-radius: 6px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.control-group label {
+    font-weight: 600;
+    color: #444;
+    min-width: 100px;
+}
+
+input[type="color"] {
+    width: 60px;
+    height: 35px;
+    padding: 0;
+    border: 2px solid #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+input[type="color"]:hover {
+    border-color: #aaa;
+    transform: scale(1.05);
+}
+
+input[type="range"] {
+    width: 100px;
+    cursor: pointer;
+}
+
 button {
-    padding: 10px 20px;
+    padding: 12px 24px;
     margin: 0 10px;
     cursor: pointer;
-    border: none;
-    border-radius: 4px;
+    border: 2px solid transparent;
+    border-radius: 6px;
     color: white;
-    font-weight: 500;
+    font-weight: 600;
+    font-size: 1.1em;
+    letter-spacing: 0.5px;
     transition: all 0.3s ease;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+    text-shadow: 1px 1px 1px rgba(0,0,0,0.2);
 }
 
 #lineBtn {
-    background-color: #cf1111;
+    background-color: #e74c3c;
+    border-color: #c0392b;
 }
 
 #rectBtn {
-    background-color: #1d951b;
+    background-color: #27ae60;
+    border-color: #219a52;
 }
 
 #ellipseBtn {
-    background-color: #2e1ea6;
+    background-color: #3498db;
+    border-color: #2980b9;
+}
+
+#selectBtn {
+    background-color: #9b59b6;
+    border-color: #8e44ad;
+}
+
+#deleteBtn {
+    background-color: #e74c3c;
+    border-color: #c0392b;
+}
+
+#eraserBtn {
+    background-color: #7f8c8d;
+    border-color: #6c7778;
 }
 
 button:hover {
-    opacity: 0.9;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 8px rgba(0,0,0,0.3);
+    filter: brightness(110%);
 }
 
-button.selected {
-    box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+button:active, button.selected {
     transform: translateY(1px);
-    opacity: 1;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+    filter: brightness(95%);
 }
 
 .canvas-container {
