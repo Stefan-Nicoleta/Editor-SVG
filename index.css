@@ -33,10 +33,6 @@ h2 {
     font-size: 1.8em;
 }
 
-h2 i {
-    color: #4CAF50;
-}
-
 main {
     flex: 1;
 }
@@ -63,11 +59,22 @@ button {
     cursor: pointer;
     border: none;
     border-radius: 4px;
-    background-color: #4CAF50;
     color: white;
     font-weight: 500;
     transition: all 0.3s ease;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+#lineBtn {
+    background-color: #cf1111;
+}
+
+#rectBtn {
+    background-color: #1d951b;
+}
+
+#ellipseBtn {
+    background-color: #2e1ea6;
 }
 
 button:hover {

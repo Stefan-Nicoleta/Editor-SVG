@@ -4,13 +4,6 @@ let isDrawing = false;
 let startX, startY;
 let currentElement = null;
 
-// Culorile pentru fiecare formă
-const shapeColors = {
-    'line': '#FF6B6B',     // red
-    'rect': '#56cd4eff',     // green
-    'ellipse': '#45B7D1'   // albastru
-};
-
 // Selectăm elementele DOM necesare
 const svgContainer = document.getElementById('svgContainer');
 const buttons = document.querySelectorAll('button');
@@ -18,13 +11,8 @@ const buttons = document.querySelectorAll('button');
 // Funcție pentru selectarea instrumentului
 function selectTool(toolName) {
     currentTool = toolName;
-    buttons.forEach(btn => {
-        btn.classList.remove('selected');
-        btn.style.backgroundColor = '#4CAF50'; // Resetăm culoarea la cea implicită
-    });
-    const selectedButton = document.getElementById(toolName + 'Btn');
-    selectedButton.classList.add('selected');
-    selectedButton.style.backgroundColor = shapeColors[toolName];
+    buttons.forEach(btn => btn.classList.remove('selected'));
+    document.getElementById(toolName + 'Btn').classList.add('selected');
 }
 
 // Event listeners pentru butoane
@@ -48,8 +36,7 @@ svgContainer.onmousedown = (e) => {
             currentElement.setAttribute("y1", startY);
             currentElement.setAttribute("x2", startX);
             currentElement.setAttribute("y2", startY);
-            currentElement.setAttribute("stroke", shapeColors.line);
-            currentElement.setAttribute("stroke-width", "3");
+            currentElement.setAttribute("stroke", "black");
             break;
         case 'rect':
             currentElement = document.createElementNS("http://www.w3.org/2000/svg", "rect");
@@ -57,9 +44,8 @@ svgContainer.onmousedown = (e) => {
             currentElement.setAttribute("y", startY);
             currentElement.setAttribute("width", 0);
             currentElement.setAttribute("height", 0);
-            currentElement.setAttribute("stroke", shapeColors.rect);
-            currentElement.setAttribute("stroke-width", "2");
-            currentElement.setAttribute("fill", shapeColors.rect + "33"); // Adăugăm transparență
+            currentElement.setAttribute("stroke", "black");
+            currentElement.setAttribute("fill", "none");
             break;
         case 'ellipse':
             currentElement = document.createElementNS("http://www.w3.org/2000/svg", "ellipse");
@@ -67,9 +53,8 @@ svgContainer.onmousedown = (e) => {
             currentElement.setAttribute("cy", startY);
             currentElement.setAttribute("rx", 0);
             currentElement.setAttribute("ry", 0);
-            currentElement.setAttribute("stroke", shapeColors.ellipse);
-            currentElement.setAttribute("stroke-width", "2");
-            currentElement.setAttribute("fill", shapeColors.ellipse + "33"); // Adăugăm transparență
+            currentElement.setAttribute("stroke", "black");
+            currentElement.setAttribute("fill", "none");
             break;
     }
     
