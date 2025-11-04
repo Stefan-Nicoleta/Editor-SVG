@@ -7,15 +7,30 @@
     <link rel="stylesheet" href="index.css">
 </head>
 <body>
-    <h2>
-        Construirea unui editor pentru grafica vectoriala folosind <i>elementul SVG.</i>
-    </h2>
-    <div class="toolbar">
-        <button id="lineBtn">Linie</button>
-        <button id="rectBtn">Dreptunghi</button>
-        <button id="ellipseBtn">Elipsă</button>
+    <div class="container">
+        <header>
+            <h2>
+                Construirea unui editor pentru grafica vectoriala folosind <i>elementul SVG</i>
+            </h2>
+        </header>
+        
+        <main>
+            <div class="editor-container">
+                <div class="toolbar">
+                    <button id="lineBtn">Linie</button>
+                    <button id="rectBtn">Dreptunghi</button>
+                    <button id="ellipseBtn">Elipsă</button>
+                </div>
+                <div class="canvas-container">
+                    <svg id="svgContainer" width="800" height="600"></svg>
+                </div>
+            </div>
+        </main>
+        
+        <footer>
+            <p>Editor SVG © 2025 Stefan Nicoleta-Cristina</p>
+        </footer>
     </div>
-    <svg id="svgContainer" width="800" height="600"></svg>
     <script src="index.js"></script>
 </body>
 </html>
