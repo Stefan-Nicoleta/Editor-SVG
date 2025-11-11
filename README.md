@@ -1,2 +1,2 @@
 # Editor-SVG
-Construirea unui editor pentru grafica vectoriala folosind elementul SVG.
+Building a vector graphics editor using the SVG element.
