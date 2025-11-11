@@ -52,7 +52,7 @@ strokeColorInput.addEventListener('input', (e) => {
 fillColorInput.addEventListener('input', (e) => {
     currentFillColor = e.target.value;
     if (selectedElement && selectedElement.tagName !== 'line') {  // Nu aplicăm fill pentru linii
-        selectedElement.setAttribute('fill', currentFillColor);
+        //selectedElement.setAttribute('fill', currentFillColor);
         selectedElement.style.fill = currentFillColor; // Adăugăm și stil direct pentru compatibilitate
     }
 });
@@ -293,3 +293,10 @@ svgContainer.onmouseleave = () => {
         currentElement = null; // Eliberează referința la elementul curent
     }
 };
+
+// suport pentru anularea ultimelor n operații (undo) 
+//nu merge
+
+
+
+

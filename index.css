@@ -1,3 +1,9 @@
+#trecereMouse:hover {
+    color: rgb(224, 24, 24);
+    background-color: rgb(156, 203, 247);
+}
+
+
 * {
     margin: 0;
     padding: 0;

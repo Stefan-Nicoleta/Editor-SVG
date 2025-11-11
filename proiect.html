@@ -9,10 +9,11 @@
 <body>
     <div class="container">
         <header>
-            <h2>
+            <h2 id="trecereMouse">
                 Construirea unui editor pentru grafica vectoriala folosind <i>elementul SVG</i>
             </h2>
         </header>
+        <!-- <button id="salveazaBtn" onclick="salveaza()">Salveaza ca PNG</button> -->
         
         <main>
             <div class="editor-container">
@@ -64,6 +65,19 @@
         
 
     </div>
-    <script src="index.js"></script>
+    <script src="index.js">
+
+// function salveaza(){
+//     let link=document.createElement("a");
+//     link.download="fisier.png";
+//     link.href=canvas1.toDataURL("image/png");
+//     link.click();
+// }
+
+
+// let b1=document.getElementById("salveazaBtn");
+// b1.addEventListener("click",salveaza);
+
+    </script>
 </body>
 </html>
