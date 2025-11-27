@@ -179,11 +179,21 @@ strokeWidthInput.addEventListener('input', (e) => {
  * @param {string} toolName - Numele instrumentului selectat ('line', 'rect', 'ellipse')
  */
 function selectTool(toolName) {
-    currentTool = toolName;  // Setează instrumentul curent
-    // Elimină clasa 'selected' de pe toate butoanele
-    buttons.forEach(btn => btn.classList.remove('selected'));
-    // Adaugă clasa 'selected' pe butonul activ
-    document.getElementById(toolName + 'Btn').classList.add('selected');
+    const btn = document.getElementById(toolName + 'Btn');
+    if (!btn) return;
+    const wasSelected = btn.classList.contains('selected');
+    // Remove 'selected' from all buttons
+    buttons.forEach(b => b.classList.remove('selected'));
+    if (wasSelected) {
+        // Toggle off: revert to select tool
+        currentTool = 'select';
+        const selectBtn = document.getElementById('selectBtn');
+        if (selectBtn) selectBtn.classList.add('selected');
+    } else {
+        // Activate the clicked tool
+        btn.classList.add('selected');
+        currentTool = toolName;
+    }
 }
 
 // Configurarea event listeners pentru butoanele de instrumente

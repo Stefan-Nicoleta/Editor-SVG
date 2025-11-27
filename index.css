@@ -244,6 +244,13 @@ button {
     color: #fff;
 }
 
+/* Path button: purple accent to distinguish from other shapes */
+#pathBtn {
+    background-color: #9b59b6;
+    border-color: #8e44ad;
+    color: #fff;
+}
+
 /* Select button: subtle purple outline when active */
 #selectBtn {
     background-color: #f7f3fb;
@@ -274,6 +281,58 @@ button.selected {
     background-color: #2b8fe6; /* primary */
     color: #fff;
     border-color: #1f6fb3;
+    transform: translateY(1px);
+    box-shadow: inset 0 6px 14px rgba(0,0,0,0.28);
+    outline: 2px solid rgba(0,0,0,0.08);
+}
+
+/* Darker variants when specific shape buttons are selected */
+/* stronger, darker pressed variants */
+#lineBtn.selected {
+    background-color: #922b1f; /* much darker red */
+    border-color: #6f1f17;
+    color: #fff;
+}
+
+#rectBtn.selected {
+    background-color: #145a33; /* much darker green */
+    border-color: #0f4b29;
+    color: #fff;
+}
+
+#ellipseBtn.selected {
+    background-color: #1f618a; /* much darker blue */
+    border-color: #164e6b;
+    color: #fff;
+}
+
+#pathBtn.selected {
+    background-color: #5b2e72; /* much darker purple */
+    border-color: #4a235f;
+    color: #fff;
+}
+
+#selectBtn.selected {
+    background-color: #e0d4ff; /* slightly darker than default */
+    border-color: #cbbcf5;
+    color: #4b2f70;
+    box-shadow: inset 0 4px 8px rgba(0,0,0,0.14);
+}
+
+/* Destructive actions: darker red when selected */
+#deleteBtn.selected {
+    background-color: #9b1e1e; /* strong dark red */
+    border-color: #6f1515;
+    color: #fff;
+    box-shadow: inset 0 6px 14px rgba(0,0,0,0.34);
+}
+
+/* Clear canvas button pressed state */
+#clearAllBtn.selected {
+    background-color: #9b1e1e; /* same dark red to indicate destructive action */
+    border-color: #6f1515;
+    color: #fff;
+    box-shadow: inset 0 6px 14px rgba(0,0,0,0.34);
 }
 
 .canvas-container {
