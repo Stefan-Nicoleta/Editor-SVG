@@ -389,66 +389,53 @@ svgContainer.onmousedown = (e) => {
     isDrawing = true; // Marchează începutul desenării
     // Calculează coordonatele relative la containerul SVG
     const rect = svgContainer.getBoundingClientRect();
-    startX = e.clientX - rect.left;  // Coordonata X inițială
-    startY = e.clientY - rect.top;   // Coordonata Y inițială
+    startX = e.clientX - rect.left;
+    startY = e.clientY - rect.top;
     
     // Creează elementul SVG corespunzător instrumentului selectat
     switch(currentTool) {
         case 'line':
-            // Creează o linie SVG
             currentElement = document.createElementNS("http://www.w3.org/2000/svg", "line");
-            // Setează punctul de început
             currentElement.setAttribute("x1", startX);
             currentElement.setAttribute("y1", startY);
-            // Inițial, punctul de sfârșit este identic cu cel de început
             currentElement.setAttribute("x2", startX);
             currentElement.setAttribute("y2", startY);
-            // Aplică stilizarea
             currentElement.setAttribute("stroke", currentColor);
             currentElement.setAttribute("stroke-width", currentWidth);
+            currentElement.setAttribute("opacity", "0.6");
             break;
-            
         case 'rect':
-            // Creează un dreptunghi SVG
             currentElement = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-            // Setează poziția inițială
             currentElement.setAttribute("x", startX);
             currentElement.setAttribute("y", startY);
-            // Inițial, dimensiunile sunt 0
             currentElement.setAttribute("width", 0);
             currentElement.setAttribute("height", 0);
-            // Aplică stilizarea
             currentElement.setAttribute("stroke", currentColor);
             currentElement.setAttribute("stroke-width", currentWidth);
-            // Aplicăm fill doar dacă toggle-ul e activat; altfel lăsăm transparent
+            currentElement.setAttribute("opacity", "0.6");
             if (fillEnabledInput && fillEnabledInput.checked) {
                 currentElement.setAttribute("fill", currentFillColor);
             } else {
                 currentElement.setAttribute("fill", "none");
             }
             break;
-            
         case 'ellipse':
-            // Creează o elipsă SVG
             currentElement = document.createElementNS("http://www.w3.org/2000/svg", "ellipse");
-            // Setează centrul elipsei
             currentElement.setAttribute("cx", startX);
             currentElement.setAttribute("cy", startY);
-            // Inițial, razele sunt 0
             currentElement.setAttribute("rx", 0);
             currentElement.setAttribute("ry", 0);
-            // Aplică stilizarea
             currentElement.setAttribute("stroke", currentColor);
             currentElement.setAttribute("stroke-width", currentWidth);
+            currentElement.setAttribute("opacity", "0.6");
             if (fillEnabledInput && fillEnabledInput.checked) {
                 currentElement.setAttribute("fill", currentFillColor);
             } else {
                 currentElement.setAttribute("fill", "none");
             }
             break;
-            case 'path':
-                // path handled via click events (see earlier) — keep for completeness
-                break;
+        case 'path':
+            break;
     }
     
     svgContainer.appendChild(currentElement);
@@ -462,22 +449,10 @@ selectTool('select');
  * poziția curentă a mouse-ului
  */
 svgContainer.onmousemove = (e) => {
-    // Calculează coordonatele curente relative la containerul SVG
     const rect = svgContainer.getBoundingClientRect();
     const currentX = e.clientX - rect.left;
     const currentY = e.clientY - rect.top;
 
-    // Show preview when hovering over canvas with a drawing tool selected (but not drawing yet)
-    if (!isDrawing && !isDraggingElement && !isDrawingPath && currentTool && ['line', 'rect', 'ellipse'].includes(currentTool)) {
-        if (!previewElement) {
-            createPreviewElement(currentTool, currentX, currentY);
-        }
-        updatePreviewElement(currentTool, currentX, currentY);
-    } else if (previewElement && !isDrawing) {
-        removePreviewElement();
-    }
-
-    // Dacă mutăm un element selectat, gestionăm mișcarea și ieșim
     if (isDraggingElement && selectedElement && dragData) {
         const dx = currentX - dragStartX;
         const dy = currentY - dragStartY;
@@ -497,7 +472,6 @@ svgContainer.onmousemove = (e) => {
         return;
     }
 
-    // Dacă desenăm o cale, actualizăm previzualizarea ultimei segmente cu poziția curentă a mouse-ului
     if (isDrawingPath && currentPathElement && currentPathPoints.length > 0) {
         const tempPoints = currentPathPoints.concat([{ x: currentX, y: currentY }]);
         currentPathElement.setAttribute('d', pointsToPathD(tempPoints));
@@ -506,7 +480,6 @@ svgContainer.onmousemove = (e) => {
 
     if (!isDrawing) return;
     
-    // Actualizează forma în funcție de instrumentul selectat
     switch(currentTool) {
         case 'line':
             currentElement.setAttribute("x2", currentX);
@@ -538,6 +511,7 @@ svgContainer.onmousemove = (e) => {
 svgContainer.onmouseup = () => {
     isDrawing = false;
     if (currentElement) {
+        currentElement.removeAttribute('opacity');
         elementStack.push(currentElement);
     }
     currentElement = null;
