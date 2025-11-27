@@ -47,6 +47,13 @@ let elementStack = [];
 let isDraggingElement = false;
 let dragStartX = 0, dragStartY = 0;
 let dragData = null; // will hold original attributes for the dragged element
+// Path drawing state
+let isDrawingPath = false;
+let currentPathPoints = [];
+let currentPathElement = null;
+let isHandleDragging = false;
+let activeHandle = null;
+let handleElements = [];
 
 // Event listeners pentru controalele de stil
 strokeColorInput.addEventListener('input', (e) => {
@@ -105,6 +112,7 @@ function selectTool(toolName) {
 document.getElementById('lineBtn').onclick = () => selectTool('line');     // Instrument linie
 document.getElementById('rectBtn').onclick = () => selectTool('rect');     // Instrument dreptunghi
 document.getElementById('ellipseBtn').onclick = () => selectTool('ellipse');
+document.getElementById('pathBtn').onclick = () => selectTool('path');
 document.getElementById('selectBtn').onclick = () => selectTool('select');
 document.getElementById('deleteBtn').onclick = () => {
     if (selectedElement) {
@@ -222,12 +230,44 @@ svgContainer.onmousedown = (e) => {
             } else {
                 dragData = null;
             }
+            // If the selected element is a path, create handles for editing its points
+            if (selectedElement && selectedElement.tagName && selectedElement.tagName.toLowerCase() === 'path') {
+                createHandlesForPath(selectedElement);
+            } else {
+                removeAllHandles();
+            }
         } else {
             // Click pe canvas: deselectăm și anulăm drag
             selectedElement = null;
             isDraggingElement = false;
             dragData = null;
+            removeAllHandles();
         }
+        return;
+    }
+
+    // Dacă suntem în modul path, click-ul adaugă puncte (nu folosim isDrawing normal)
+    if (currentTool === 'path') {
+        const rect = svgContainer.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+        // Dacă nu am început o cale, inițiem
+        if (!isDrawingPath) {
+            isDrawingPath = true;
+            currentPathPoints = [{ x: mouseX, y: mouseY }];
+            currentPathElement = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            currentPathElement.setAttribute('stroke', currentColor);
+            currentPathElement.setAttribute('stroke-width', currentWidth);
+            currentPathElement.setAttribute('fill', 'none');
+            currentPathElement._points = currentPathPoints;
+            svgContainer.appendChild(currentPathElement);
+        } else {
+            // Adăugăm punct
+            currentPathPoints.push({ x: mouseX, y: mouseY });
+            currentPathElement._points = currentPathPoints;
+        }
+        // Actualizăm atributul 'd'
+        currentPathElement.setAttribute('d', pointsToPathD(currentPathPoints));
         return;
     }
     
@@ -291,6 +331,9 @@ svgContainer.onmousedown = (e) => {
                 currentElement.setAttribute("fill", "none");
             }
             break;
+            case 'path':
+                // path handled via click events (see earlier) — keep for completeness
+                break;
     }
     
     svgContainer.appendChild(currentElement);
@@ -326,6 +369,14 @@ svgContainer.onmousemove = (e) => {
             selectedElement.setAttribute('cx', dragData.cx + dx);
             selectedElement.setAttribute('cy', dragData.cy + dy);
         }
+        return;
+    }
+
+    // Dacă desenăm o cale, actualizăm previzualizarea ultimei segmente cu poziția curentă a mouse-ului
+    if (isDrawingPath && currentPathElement && currentPathPoints.length > 0) {
+        // construit d cu punctele deja introduse + segmentul curent către mouse
+        const tempPoints = currentPathPoints.concat([{ x: currentX, y: currentY }]);
+        currentPathElement.setAttribute('d', pointsToPathD(tempPoints));
         return;
     }
 
@@ -385,6 +436,7 @@ svgContainer.onmouseup = () => {
         isDraggingElement = false;
         dragData = null;
     }
+    // Dacă eram în procesul de desen al unei căi și am dat mouseup, nu o finalizăm automat (user trebuie dublu-click)
 };
 
 /**
@@ -412,6 +464,135 @@ document.addEventListener('keydown', (e) => {
         }
         // Deselectăm orice element selectat după undo
         selectedElement = null;
+    }
+});
+
+// Double-click finalizes a path
+svgContainer.ondblclick = (e) => {
+    if (isDrawingPath && currentPathElement) {
+        // finalize path
+        isDrawingPath = false;
+        // ensure final points array is set
+        currentPathElement._points = currentPathPoints.slice();
+        // keep fill if enabled
+        if (fillEnabledInput && fillEnabledInput.checked) {
+            currentPathElement.setAttribute('fill', currentFillColor);
+        }
+        elementStack.push(currentPathElement);
+        currentPathElement = null;
+        currentPathPoints = [];
+    }
+};
+
+// Enter finalizes path, Escape cancels
+document.addEventListener('keydown', (e) => {
+    if (isDrawingPath) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            if (currentPathElement) {
+                isDrawingPath = false;
+                currentPathElement._points = currentPathPoints.slice();
+                if (fillEnabledInput && fillEnabledInput.checked) {
+                    currentPathElement.setAttribute('fill', currentFillColor);
+                }
+                elementStack.push(currentPathElement);
+                currentPathElement = null;
+                currentPathPoints = [];
+            }
+        } else if (e.key === 'Escape') {
+            // cancel
+            e.preventDefault();
+            if (currentPathElement && currentPathElement.parentNode) {
+                currentPathElement.parentNode.removeChild(currentPathElement);
+            }
+            isDrawingPath = false;
+            currentPathElement = null;
+            currentPathPoints = [];
+        }
+    }
+});
+
+/**
+ * Helpers for path editing
+ */
+function pointsToPathD(points) {
+    if (!points || points.length === 0) return '';
+    let d = `M ${points[0].x} ${points[0].y}`;
+    for (let i = 1; i < points.length; i++) {
+        d += ` L ${points[i].x} ${points[i].y}`;
+    }
+    return d;
+}
+
+function createHandlesForPath(pathEl) {
+    removeAllHandles();
+    // ensure path has _points
+    let pts = pathEl._points;
+    if (!pts) {
+        // try parse d attribute for M/L commands
+        const d = pathEl.getAttribute('d') || '';
+        pts = [];
+        const matches = d.match(/([ML])\s*([\d.-]+)\s*,?\s*([\d.-]+)/gi);
+        if (matches) {
+            for (const m of matches) {
+                const nums = m.replace(/[MLml]/, '').trim().split(/[,\s]+/).map(Number);
+                if (nums.length >= 2) pts.push({ x: nums[0], y: nums[1] });
+            }
+        }
+        pathEl._points = pts;
+    }
+    // create circle handles
+    pts.forEach((p, idx) => {
+        const c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        c.setAttribute('cx', p.x);
+        c.setAttribute('cy', p.y);
+        c.setAttribute('r', 6);
+        c.setAttribute('fill', '#fff');
+        c.setAttribute('stroke', '#333');
+        c.setAttribute('stroke-width', 1);
+        c.style.cursor = 'pointer';
+        c.dataset.handleIndex = idx;
+        // prevent clicks on handle from selecting other things
+        c.addEventListener('mousedown', (ev) => {
+            ev.stopPropagation();
+            isHandleDragging = true;
+            activeHandle = c;
+        });
+        svgContainer.appendChild(c);
+        handleElements.push(c);
+    });
+}
+
+function removeAllHandles() {
+    handleElements.forEach(h => { if (h.parentNode) h.parentNode.removeChild(h); });
+    handleElements = [];
+    isHandleDragging = false;
+    activeHandle = null;
+}
+
+// handle dragging of handles
+document.addEventListener('mousemove', (e) => {
+    if (!isHandleDragging || !activeHandle) return;
+    const rect = svgContainer.getBoundingClientRect();
+    const mx = e.clientX - rect.left;
+    const my = e.clientY - rect.top;
+    activeHandle.setAttribute('cx', mx);
+    activeHandle.setAttribute('cy', my);
+    const idx = parseInt(activeHandle.dataset.handleIndex, 10);
+    if (selectedElement && selectedElement.tagName && selectedElement.tagName.toLowerCase() === 'path') {
+        const pts = selectedElement._points || [];
+        if (pts[idx]) {
+            pts[idx].x = mx;
+            pts[idx].y = my;
+            selectedElement.setAttribute('d', pointsToPathD(pts));
+        }
+    }
+});
+
+document.addEventListener('mouseup', () => {
+    if (isHandleDragging) {
+        isHandleDragging = false;
+        activeHandle = null;
     }
 });
 
