@@ -386,13 +386,11 @@ svgContainer.onmousedown = (e) => {
         return;
     }
     
-    isDrawing = true; // Marchează începutul desenării
-    // Calculează coordonatele relative la containerul SVG
+    isDrawing = true;
     const rect = svgContainer.getBoundingClientRect();
     startX = e.clientX - rect.left;
     startY = e.clientY - rect.top;
     
-    // Creează elementul SVG corespunzător instrumentului selectat
     switch(currentTool) {
         case 'line':
             currentElement = document.createElementNS("http://www.w3.org/2000/svg", "line");
@@ -402,7 +400,7 @@ svgContainer.onmousedown = (e) => {
             currentElement.setAttribute("y2", startY);
             currentElement.setAttribute("stroke", currentColor);
             currentElement.setAttribute("stroke-width", currentWidth);
-            currentElement.setAttribute("opacity", "0.6");
+            currentElement.setAttribute("opacity", "0.3");
             break;
         case 'rect':
             currentElement = document.createElementNS("http://www.w3.org/2000/svg", "rect");
@@ -412,7 +410,7 @@ svgContainer.onmousedown = (e) => {
             currentElement.setAttribute("height", 0);
             currentElement.setAttribute("stroke", currentColor);
             currentElement.setAttribute("stroke-width", currentWidth);
-            currentElement.setAttribute("opacity", "0.6");
+            currentElement.setAttribute("opacity", "0.3");
             if (fillEnabledInput && fillEnabledInput.checked) {
                 currentElement.setAttribute("fill", currentFillColor);
             } else {
@@ -427,7 +425,7 @@ svgContainer.onmousedown = (e) => {
             currentElement.setAttribute("ry", 0);
             currentElement.setAttribute("stroke", currentColor);
             currentElement.setAttribute("stroke-width", currentWidth);
-            currentElement.setAttribute("opacity", "0.6");
+            currentElement.setAttribute("opacity", "0.3");
             if (fillEnabledInput && fillEnabledInput.checked) {
                 currentElement.setAttribute("fill", currentFillColor);
             } else {
