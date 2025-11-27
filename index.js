@@ -59,6 +59,13 @@ const STORAGE_KEY = 'editor-svg-drawing-v1';
 let saveTimer = null;
 const SAVE_DEBOUNCE_MS = 700;
 
+function scheduleSave() {
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(() => {
+        saveSVGToStorage();
+    }, SAVE_DEBOUNCE_MS);
+}
+
 // Event listeners pentru controalele de stil
 strokeColorInput.addEventListener('input', (e) => {
     currentColor = e.target.value;
