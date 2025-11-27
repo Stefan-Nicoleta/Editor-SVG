@@ -69,37 +69,31 @@ function scheduleSave() {
 }
 
 function createPreviewElement(tool, x, y) {
-    if (!previewElement) {
-        previewElement = document.createElementNS('http://www.w3.org/2000/svg', tool);
-        previewElement.setAttribute('opacity', '0.4');
-        previewElement.setAttribute('pointer-events', 'none');
-        svgContainer.appendChild(previewElement);
-    }
-    
+    removePreviewElement();
+    previewElement = document.createElementNS('http://www.w3.org/2000/svg', tool);
+    previewElement.setAttribute('opacity', '0.6');
+    previewElement.setAttribute('pointer-events', 'none');
     previewElement.setAttribute('stroke', currentColor);
     previewElement.setAttribute('stroke-width', currentWidth);
+    
     if (tool !== 'line') {
-        if (fillEnabledInput && fillEnabledInput.checked) {
-            previewElement.setAttribute('fill', currentFillColor);
-        } else {
-            previewElement.setAttribute('fill', 'none');
-        }
+        previewElement.setAttribute('fill', fillEnabledInput?.checked ? currentFillColor : 'none');
     } else {
         previewElement.setAttribute('fill', 'none');
     }
     
     switch(tool) {
         case 'line':
-            previewElement.setAttribute('x1', x);
-            previewElement.setAttribute('y1', y);
-            previewElement.setAttribute('x2', x + 50);
-            previewElement.setAttribute('y2', y + 50);
+            previewElement.setAttribute('x1', x - 30);
+            previewElement.setAttribute('y1', y - 30);
+            previewElement.setAttribute('x2', x + 30);
+            previewElement.setAttribute('y2', y + 30);
             break;
         case 'rect':
-            previewElement.setAttribute('x', x);
-            previewElement.setAttribute('y', y);
-            previewElement.setAttribute('width', 60);
-            previewElement.setAttribute('height', 60);
+            previewElement.setAttribute('x', x - 35);
+            previewElement.setAttribute('y', y - 35);
+            previewElement.setAttribute('width', 70);
+            previewElement.setAttribute('height', 70);
             break;
         case 'ellipse':
             previewElement.setAttribute('cx', x);
@@ -108,6 +102,7 @@ function createPreviewElement(tool, x, y) {
             previewElement.setAttribute('ry', 30);
             break;
     }
+    svgContainer.appendChild(previewElement);
 }
 
 function removePreviewElement() {
@@ -122,22 +117,18 @@ function updatePreviewElement(tool, x, y) {
     
     switch(tool) {
         case 'line':
-            previewElement.setAttribute('x1', x);
-            previewElement.setAttribute('y1', y);
-            previewElement.setAttribute('x2', x + 50);
-            previewElement.setAttribute('y2', y + 50);
+            previewElement.setAttribute('x1', x - 30);
+            previewElement.setAttribute('y1', y - 30);
+            previewElement.setAttribute('x2', x + 30);
+            previewElement.setAttribute('y2', y + 30);
             break;
         case 'rect':
-            previewElement.setAttribute('x', x);
-            previewElement.setAttribute('y', y);
-            previewElement.setAttribute('width', 60);
-            previewElement.setAttribute('height', 60);
+            previewElement.setAttribute('x', x - 35);
+            previewElement.setAttribute('y', y - 35);
             break;
         case 'ellipse':
             previewElement.setAttribute('cx', x);
             previewElement.setAttribute('cy', y);
-            previewElement.setAttribute('rx', 40);
-            previewElement.setAttribute('ry', 30);
             break;
     }
 }
