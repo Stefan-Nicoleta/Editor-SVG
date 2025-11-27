@@ -28,6 +28,7 @@ const svgContainer = document.getElementById('svgContainer');  // Zona de desen 
 const buttons = document.querySelectorAll('button');          // Toate butoanele din toolbar
 const strokeColorInput = document.getElementById('strokeColor');    // Input pentru culoare contur
 const fillColorInput = document.getElementById('fillColor');       // Input pentru culoare fundal
+const fillEnabledInput = document.getElementById('fillEnabled'); // Checkbox pentru a activa/dezactiva fill
 const strokeWidthInput = document.getElementById('strokeWidth');    // Slider pentru grosimea liniei
 const strokeWidthValue = document.getElementById('strokeWidthValue'); // Afișarea valorii grosimii
 
@@ -38,8 +39,10 @@ let startX, startY;         // Coordonatele de început ale formei curente
 let currentElement = null;   // Elementul SVG care este în curs de desenare
 let selectedElement = null;  // Elementul SVG selectat pentru editare
 let currentColor = '#000000'; // Culoarea curentă selectată pentru contur
-let currentFillColor = '#ffffff'; // Culoarea curentă pentru fundal
+let currentFillColor = '#ffffff'; // Culoarea curentă pentru fundal (folosită doar dacă fill e activat)
 let currentWidth = 2;        // Grosimea curentă a liniei
+// Stivă pentru elementele desenate (folosită la undo)
+let elementStack = [];
 
 // Event listeners pentru controalele de stil
 strokeColorInput.addEventListener('input', (e) => {
@@ -51,9 +54,22 @@ strokeColorInput.addEventListener('input', (e) => {
 
 fillColorInput.addEventListener('input', (e) => {
     currentFillColor = e.target.value;
-    if (selectedElement && selectedElement.tagName !== 'line') {  // Nu aplicăm fill pentru linii
-        //selectedElement.setAttribute('fill', currentFillColor);
-        selectedElement.style.fill = currentFillColor; // Adăugăm și stil direct pentru compatibilitate
+    if (selectedElement && selectedElement.tagName !== 'line' && fillEnabledInput.checked) {
+        selectedElement.setAttribute('fill', currentFillColor);
+        selectedElement.style.fill = currentFillColor;
+    }
+});
+
+// Când toggle-ul de fill se schimbă, aplicăm sau eliminăm fill pentru elementul selectat
+fillEnabledInput.addEventListener('change', (e) => {
+    if (selectedElement && selectedElement.tagName !== 'line') {
+        if (e.target.checked) {
+            selectedElement.setAttribute('fill', currentFillColor);
+            selectedElement.style.fill = currentFillColor;
+        } else {
+            selectedElement.setAttribute('fill', 'none');
+            selectedElement.style.fill = 'none';
+        }
     }
 });
 
@@ -88,6 +104,9 @@ document.getElementById('ellipseBtn').onclick = () => selectTool('ellipse');
 document.getElementById('selectBtn').onclick = () => selectTool('select');
 document.getElementById('deleteBtn').onclick = () => {
     if (selectedElement) {
+        // Dacă elementul este în stivă, îl eliminăm și din stivă
+        const idx = elementStack.indexOf(selectedElement);
+        if (idx !== -1) elementStack.splice(idx, 1);
         selectedElement.remove();
         selectedElement = null;
     }
@@ -149,11 +168,20 @@ svgContainer.onmousedown = (e) => {
             
             // Verificăm dacă elementul are fill (nu este linie)
             if (selectedElement.tagName !== 'line') {
-                const fillColor = selectedElement.getAttribute('fill') || 
-                                selectedElement.style.fill || 
-                                '#ffffff';
-                fillColorInput.value = fillColor;
-                currentFillColor = fillColor;
+                const fillAttr = selectedElement.getAttribute('fill') || selectedElement.style.fill || 'none';
+                if (fillAttr && fillAttr !== 'none') {
+                    fillEnabledInput.checked = true;
+                    // Dacă avem o culoare validă, punem valoarea în color picker
+                    try {
+                        // dacă fillAttr e în format hex, setăm input; altfel păstrăm curent
+                        if (/^#([0-9A-F]{3}){1,2}$/i.test(fillAttr)) {
+                            fillColorInput.value = fillAttr;
+                            currentFillColor = fillAttr;
+                        }
+                    } catch (err) {}
+                } else {
+                    fillEnabledInput.checked = false;
+                }
             }
             
             const width = selectedElement.getAttribute('stroke-width') || 2;
@@ -200,7 +228,12 @@ svgContainer.onmousedown = (e) => {
             // Aplică stilizarea
             currentElement.setAttribute("stroke", currentColor);
             currentElement.setAttribute("stroke-width", currentWidth);
-            currentElement.setAttribute("fill", currentFillColor); // Aplicăm culoarea de fundal
+            // Aplicăm fill doar dacă toggle-ul e activat; altfel lăsăm transparent
+            if (fillEnabledInput && fillEnabledInput.checked) {
+                currentElement.setAttribute("fill", currentFillColor);
+            } else {
+                currentElement.setAttribute("fill", "none");
+            }
             break;
             
         case 'ellipse':
@@ -215,7 +248,11 @@ svgContainer.onmousedown = (e) => {
             // Aplică stilizarea
             currentElement.setAttribute("stroke", currentColor);
             currentElement.setAttribute("stroke-width", currentWidth);
-            currentElement.setAttribute("fill", currentFillColor); // Aplicăm culoarea de fundal
+            if (fillEnabledInput && fillEnabledInput.checked) {
+                currentElement.setAttribute("fill", currentFillColor);
+            } else {
+                currentElement.setAttribute("fill", "none");
+            }
             break;
     }
     
@@ -278,6 +315,10 @@ svgContainer.onmousemove = (e) => {
  */
 svgContainer.onmouseup = () => {
     isDrawing = false;        // Oprește modul de desenare
+    // Dacă există un element curent finalizat, îl adăugăm în stivă
+    if (currentElement) {
+        elementStack.push(currentElement);
+    }
     currentElement = null;    // Eliberează referința la elementul curent
 };
 
@@ -295,7 +336,19 @@ svgContainer.onmouseleave = () => {
 };
 
 // suport pentru anularea ultimelor n operații (undo) 
-//nu merge
+// Undo (Ctrl+Z) - elimină ultima figură desenată
+document.addEventListener('keydown', (e) => {
+    // Detectăm Ctrl+Z (sau Cmd+Z pe Mac — browserul va seta metaKey; aici folosim ctrlKey pentru Windows)
+    if ((e.ctrlKey || e.metaKey) && (e.key === 'z' || e.key === 'Z')) {
+        e.preventDefault();
+        const last = elementStack.pop();
+        if (last && last.parentNode) {
+            last.parentNode.removeChild(last);
+        }
+        // Deselectăm orice element selectat după undo
+        selectedElement = null;
+    }
+});
 
 
 

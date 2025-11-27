@@ -6,7 +6,7 @@
     <title>Editor SVG Stefan Nicoleta-Cristina</title>
     <link rel="stylesheet" href="index.css">
 </head>
-<body>
+<body> 
     <div class="container">
         <header>
             <h2 id="trecereMouse">
@@ -34,6 +34,9 @@
                         <div class="control-group">
                             <label for="fillColor">Culoare fundal:</label>
                             <input type="color" id="fillColor" value="#ffffff">
+                            <label style="margin-left:8px; font-weight:normal;">
+                                <input type="checkbox" id="fillEnabled"> Fill
+                            </label>
                         </div>
                         <div class="control-group">
                             <label for="strokeWidth">Grosime:</label>
@@ -48,8 +51,7 @@
                         <label for="selectBtn">Selectează</label>
                         <input type="radio" name="Culoare" id="deleteBtn">
                         <label for="deleteBtn">Șterge</label>
-                        <input type="radio" name="Culoare" id="undoBtn">
-                        <label for="undoBtn">Anulează</label>
+                        
                     </div>
                 </div>
                 <!-- CERINȚA NOUĂ: Mesaj de avertizare -->
