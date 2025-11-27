@@ -116,6 +116,14 @@ document.getElementById('pathBtn').onclick = () => selectTool('path');
 document.getElementById('selectBtn').onclick = () => selectTool('select');
 document.getElementById('exportPngBtn').onclick = () => exportSVGAsImage('png');
 document.getElementById('exportJpegBtn').onclick = () => exportSVGAsImage('jpeg');
+document.getElementById('exportSvgBtn')?.addEventListener('click', () => {
+    exportSVGFile();
+    // close menu after clicking
+    if (exportMenu) {
+        exportMenu.classList.remove('show');
+        exportMenu.setAttribute('aria-hidden', 'true');
+    }
+});
 // Toggle export menu visibility
 const exportToggleBtn = document.getElementById('exportToggleBtn');
 const exportMenu = document.getElementById('exportMenu');
@@ -681,6 +689,44 @@ function exportSVGAsImage(format = 'png') {
     } catch (err) {
         console.error('Export failed', err);
         alert('Export eșuat: ' + err.message);
+    }
+}
+
+// Export the current SVG content as .svg file (removes editing handles before export)
+function exportSVGFile() {
+    try {
+        const svgEl = svgContainer;
+        // clone to avoid modifying the live DOM
+        const clone = svgEl.cloneNode(true);
+
+        // Remove editing handles (they have data-handle-index attribute)
+        const handles = clone.querySelectorAll('circle[data-handle-index]');
+        handles.forEach(h => h.remove());
+
+        const serializer = new XMLSerializer();
+        let source = serializer.serializeToString(clone);
+        if (!source.match(/^<\?xml/)) {
+            source = '<?xml version="1.0" encoding="UTF-8"?>\n' + source;
+        }
+        if (!source.match(/^<svg[^>]+xmlns=\"http:\/\/www\.w3\.org\/2000\/svg\"/)) {
+            source = source.replace(/^<svg/, '<svg xmlns="http://www.w3.org/2000/svg"');
+        }
+        if (!source.match(/^<svg[^>]+xmlns:xlink=\"http:\/\/www\.w3\.org\/1999\/xlink\"/)) {
+            source = source.replace(/^<svg/, '<svg xmlns:xlink="http://www.w3.org/1999/xlink"');
+        }
+
+        const blob = new Blob([source], { type: 'image/svg+xml;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'drawing.svg';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch (err) {
+        console.error('Failed to export SVG', err);
+        alert('Eroare la exportul SVG: ' + err.message);
     }
 }
 
