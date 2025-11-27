@@ -43,6 +43,10 @@ let currentFillColor = '#ffffff'; // Culoarea curentă pentru fundal (folosită 
 let currentWidth = 2;        // Grosimea curentă a liniei
 // Stivă pentru elementele desenate (folosită la undo)
 let elementStack = [];
+// Drag state for moving selected elements
+let isDraggingElement = false;
+let dragStartX = 0, dragStartY = 0;
+let dragData = null; // will hold original attributes for the dragged element
 
 // Event listeners pentru controalele de stil
 strokeColorInput.addEventListener('input', (e) => {
@@ -188,8 +192,41 @@ svgContainer.onmousedown = (e) => {
             strokeWidthInput.value = width;
             strokeWidthValue.textContent = width;
             currentWidth = width;
+
+            // Pregătim datele pentru drag/move: reținem poziția mouse-ului și a elementului
+            const rect = svgContainer.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+            isDraggingElement = true;
+            dragStartX = mouseX;
+            dragStartY = mouseY;
+            // Salvăm atributele originale în funcție de tipul elementului
+            const tag = selectedElement.tagName.toLowerCase();
+            if (tag === 'line') {
+                dragData = {
+                    x1: parseFloat(selectedElement.getAttribute('x1')) || 0,
+                    y1: parseFloat(selectedElement.getAttribute('y1')) || 0,
+                    x2: parseFloat(selectedElement.getAttribute('x2')) || 0,
+                    y2: parseFloat(selectedElement.getAttribute('y2')) || 0,
+                };
+            } else if (tag === 'rect') {
+                dragData = {
+                    x: parseFloat(selectedElement.getAttribute('x')) || 0,
+                    y: parseFloat(selectedElement.getAttribute('y')) || 0,
+                };
+            } else if (tag === 'ellipse') {
+                dragData = {
+                    cx: parseFloat(selectedElement.getAttribute('cx')) || 0,
+                    cy: parseFloat(selectedElement.getAttribute('cy')) || 0,
+                };
+            } else {
+                dragData = null;
+            }
         } else {
+            // Click pe canvas: deselectăm și anulăm drag
             selectedElement = null;
+            isDraggingElement = false;
+            dragData = null;
         }
         return;
     }
@@ -258,6 +295,8 @@ svgContainer.onmousedown = (e) => {
     
     svgContainer.appendChild(currentElement);
 };
+// Setăm implicit instrumentul de lucru pe 'select' pentru a permite mutarea/seleția imediat
+selectTool('select');
 
 /**
  * Event listener pentru desenare - se execută când utilizatorul mișcă mouse-ul
@@ -269,6 +308,26 @@ svgContainer.onmousemove = (e) => {
     const rect = svgContainer.getBoundingClientRect();
     const currentX = e.clientX - rect.left;  // Poziția X curentă a mouse-ului
     const currentY = e.clientY - rect.top;   // Poziția Y curentă a mouse-ului
+
+    // Dacă mutăm un element selectat, gestionăm mișcarea și ieșim
+    if (isDraggingElement && selectedElement && dragData) {
+        const dx = currentX - dragStartX;
+        const dy = currentY - dragStartY;
+        const tag = selectedElement.tagName.toLowerCase();
+        if (tag === 'line') {
+            selectedElement.setAttribute('x1', dragData.x1 + dx);
+            selectedElement.setAttribute('y1', dragData.y1 + dy);
+            selectedElement.setAttribute('x2', dragData.x2 + dx);
+            selectedElement.setAttribute('y2', dragData.y2 + dy);
+        } else if (tag === 'rect') {
+            selectedElement.setAttribute('x', dragData.x + dx);
+            selectedElement.setAttribute('y', dragData.y + dy);
+        } else if (tag === 'ellipse') {
+            selectedElement.setAttribute('cx', dragData.cx + dx);
+            selectedElement.setAttribute('cy', dragData.cy + dy);
+        }
+        return;
+    }
 
     if (!isDrawing) return; // Ieși dacă nu suntem activi în desenare
     
@@ -320,6 +379,12 @@ svgContainer.onmouseup = () => {
         elementStack.push(currentElement);
     }
     currentElement = null;    // Eliberează referința la elementul curent
+
+    // Dacă eram în modul de drag pentru un element selectat, oprim drag-ul
+    if (isDraggingElement) {
+        isDraggingElement = false;
+        dragData = null;
+    }
 };
 
 /**
