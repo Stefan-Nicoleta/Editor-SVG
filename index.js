@@ -71,7 +71,7 @@ function scheduleSave() {
 function createPreviewElement(tool, x, y) {
     if (!previewElement) {
         previewElement = document.createElementNS('http://www.w3.org/2000/svg', tool);
-        previewElement.setAttribute('opacity', '0.5');
+        previewElement.setAttribute('opacity', '0.4');
         previewElement.setAttribute('pointer-events', 'none');
         svgContainer.appendChild(previewElement);
     }
@@ -92,20 +92,20 @@ function createPreviewElement(tool, x, y) {
         case 'line':
             previewElement.setAttribute('x1', x);
             previewElement.setAttribute('y1', y);
-            previewElement.setAttribute('x2', x);
-            previewElement.setAttribute('y2', y);
+            previewElement.setAttribute('x2', x + 50);
+            previewElement.setAttribute('y2', y + 50);
             break;
         case 'rect':
             previewElement.setAttribute('x', x);
             previewElement.setAttribute('y', y);
-            previewElement.setAttribute('width', 0);
-            previewElement.setAttribute('height', 0);
+            previewElement.setAttribute('width', 60);
+            previewElement.setAttribute('height', 60);
             break;
         case 'ellipse':
             previewElement.setAttribute('cx', x);
             previewElement.setAttribute('cy', y);
-            previewElement.setAttribute('rx', 0);
-            previewElement.setAttribute('ry', 0);
+            previewElement.setAttribute('rx', 40);
+            previewElement.setAttribute('ry', 30);
             break;
     }
 }
@@ -117,29 +117,27 @@ function removePreviewElement() {
     }
 }
 
-function updatePreviewElement(tool, startX, startY, currentX, currentY) {
+function updatePreviewElement(tool, x, y) {
     if (!previewElement) return;
     
     switch(tool) {
         case 'line':
-            previewElement.setAttribute('x2', currentX);
-            previewElement.setAttribute('y2', currentY);
+            previewElement.setAttribute('x1', x);
+            previewElement.setAttribute('y1', y);
+            previewElement.setAttribute('x2', x + 50);
+            previewElement.setAttribute('y2', y + 50);
             break;
         case 'rect':
-            const width = currentX - startX;
-            const height = currentY - startY;
-            previewElement.setAttribute('width', Math.abs(width));
-            previewElement.setAttribute('height', Math.abs(height));
-            previewElement.setAttribute('x', width < 0 ? currentX : startX);
-            previewElement.setAttribute('y', height < 0 ? currentY : startY);
+            previewElement.setAttribute('x', x);
+            previewElement.setAttribute('y', y);
+            previewElement.setAttribute('width', 60);
+            previewElement.setAttribute('height', 60);
             break;
         case 'ellipse':
-            const rx = Math.abs(currentX - startX) / 2;
-            const ry = Math.abs(currentY - startY) / 2;
-            previewElement.setAttribute('cx', startX + (currentX - startX) / 2);
-            previewElement.setAttribute('cy', startY + (currentY - startY) / 2);
-            previewElement.setAttribute('rx', rx);
-            previewElement.setAttribute('ry', ry);
+            previewElement.setAttribute('cx', x);
+            previewElement.setAttribute('cy', y);
+            previewElement.setAttribute('rx', 40);
+            previewElement.setAttribute('ry', 30);
             break;
     }
 }
@@ -483,7 +481,7 @@ svgContainer.onmousemove = (e) => {
         if (!previewElement) {
             createPreviewElement(currentTool, currentX, currentY);
         }
-        updatePreviewElement(currentTool, currentX, currentY, currentX, currentY);
+        updatePreviewElement(currentTool, currentX, currentY);
     } else if (previewElement && !isDrawing) {
         removePreviewElement();
     }
