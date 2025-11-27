@@ -231,13 +231,19 @@ if (exportToggleBtn && exportMenu) {
 }
 document.getElementById('deleteBtn').onclick = () => {
     if (selectedElement) {
-        // Dacă elementul este în stivă, îl eliminăm și din stivă
         const idx = elementStack.indexOf(selectedElement);
         if (idx !== -1) elementStack.splice(idx, 1);
         selectedElement.remove();
         selectedElement = null;
     }
-}; // Instrument elipsă
+};
+
+document.getElementById('clearAllBtn').onclick = () => {
+    svgContainer.innerHTML = '';
+    elementStack = [];
+    selectedElement = null;
+    removeAllHandles();
+};
 
 /**
  * Gestionarea evenimentelor de desenare
