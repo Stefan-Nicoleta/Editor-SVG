@@ -43,6 +43,8 @@ let currentFillColor = '#ffffff'; // Culoarea curentă pentru fundal (folosită 
 let currentWidth = 2;        // Grosimea curentă a liniei
 // Stivă pentru elementele desenate (folosită la undo)
 let elementStack = [];
+// Preview element (shown while hovering before drawing)
+let previewElement = null;
 // Drag state for moving selected elements
 let isDraggingElement = false;
 let dragStartX = 0, dragStartY = 0;
@@ -64,6 +66,82 @@ function scheduleSave() {
     saveTimer = setTimeout(() => {
         saveSVGToStorage();
     }, SAVE_DEBOUNCE_MS);
+}
+
+function createPreviewElement(tool, x, y) {
+    if (!previewElement) {
+        previewElement = document.createElementNS('http://www.w3.org/2000/svg', tool);
+        previewElement.setAttribute('opacity', '0.5');
+        previewElement.setAttribute('pointer-events', 'none');
+        svgContainer.appendChild(previewElement);
+    }
+    
+    previewElement.setAttribute('stroke', currentColor);
+    previewElement.setAttribute('stroke-width', currentWidth);
+    if (tool !== 'line') {
+        if (fillEnabledInput && fillEnabledInput.checked) {
+            previewElement.setAttribute('fill', currentFillColor);
+        } else {
+            previewElement.setAttribute('fill', 'none');
+        }
+    } else {
+        previewElement.setAttribute('fill', 'none');
+    }
+    
+    switch(tool) {
+        case 'line':
+            previewElement.setAttribute('x1', x);
+            previewElement.setAttribute('y1', y);
+            previewElement.setAttribute('x2', x);
+            previewElement.setAttribute('y2', y);
+            break;
+        case 'rect':
+            previewElement.setAttribute('x', x);
+            previewElement.setAttribute('y', y);
+            previewElement.setAttribute('width', 0);
+            previewElement.setAttribute('height', 0);
+            break;
+        case 'ellipse':
+            previewElement.setAttribute('cx', x);
+            previewElement.setAttribute('cy', y);
+            previewElement.setAttribute('rx', 0);
+            previewElement.setAttribute('ry', 0);
+            break;
+    }
+}
+
+function removePreviewElement() {
+    if (previewElement && previewElement.parentNode) {
+        previewElement.parentNode.removeChild(previewElement);
+        previewElement = null;
+    }
+}
+
+function updatePreviewElement(tool, startX, startY, currentX, currentY) {
+    if (!previewElement) return;
+    
+    switch(tool) {
+        case 'line':
+            previewElement.setAttribute('x2', currentX);
+            previewElement.setAttribute('y2', currentY);
+            break;
+        case 'rect':
+            const width = currentX - startX;
+            const height = currentY - startY;
+            previewElement.setAttribute('width', Math.abs(width));
+            previewElement.setAttribute('height', Math.abs(height));
+            previewElement.setAttribute('x', width < 0 ? currentX : startX);
+            previewElement.setAttribute('y', height < 0 ? currentY : startY);
+            break;
+        case 'ellipse':
+            const rx = Math.abs(currentX - startX) / 2;
+            const ry = Math.abs(currentY - startY) / 2;
+            previewElement.setAttribute('cx', startX + (currentX - startX) / 2);
+            previewElement.setAttribute('cy', startY + (currentY - startY) / 2);
+            previewElement.setAttribute('rx', rx);
+            previewElement.setAttribute('ry', ry);
+            break;
+    }
 }
 
 // Event listeners pentru controalele de stil
@@ -397,8 +475,18 @@ selectTool('select');
 svgContainer.onmousemove = (e) => {
     // Calculează coordonatele curente relative la containerul SVG
     const rect = svgContainer.getBoundingClientRect();
-    const currentX = e.clientX - rect.left;  // Poziția X curentă a mouse-ului
-    const currentY = e.clientY - rect.top;   // Poziția Y curentă a mouse-ului
+    const currentX = e.clientX - rect.left;
+    const currentY = e.clientY - rect.top;
+
+    // Show preview when hovering over canvas with a drawing tool selected (but not drawing yet)
+    if (!isDrawing && !isDraggingElement && !isDrawingPath && currentTool && ['line', 'rect', 'ellipse'].includes(currentTool)) {
+        if (!previewElement) {
+            createPreviewElement(currentTool, currentX, currentY);
+        }
+        updatePreviewElement(currentTool, currentX, currentY, currentX, currentY);
+    } else if (previewElement && !isDrawing) {
+        removePreviewElement();
+    }
 
     // Dacă mutăm un element selectat, gestionăm mișcarea și ieșim
     if (isDraggingElement && selectedElement && dragData) {
@@ -422,43 +510,30 @@ svgContainer.onmousemove = (e) => {
 
     // Dacă desenăm o cale, actualizăm previzualizarea ultimei segmente cu poziția curentă a mouse-ului
     if (isDrawingPath && currentPathElement && currentPathPoints.length > 0) {
-        // construit d cu punctele deja introduse + segmentul curent către mouse
         const tempPoints = currentPathPoints.concat([{ x: currentX, y: currentY }]);
         currentPathElement.setAttribute('d', pointsToPathD(tempPoints));
         return;
     }
 
-    if (!isDrawing) return; // Ieși dacă nu suntem activi în desenare
+    if (!isDrawing) return;
     
     // Actualizează forma în funcție de instrumentul selectat
     switch(currentTool) {
         case 'line':
-            // Pentru linie, actualizează doar punctul final
             currentElement.setAttribute("x2", currentX);
             currentElement.setAttribute("y2", currentY);
             break;
-            
         case 'rect':
-            // Pentru dreptunghi, calculează dimensiunile și poziția
-            const width = currentX - startX;   // Lățimea dreptunghiului
-            const height = currentY - startY;  // Înălțimea dreptunghiului
-            
-            // Folosim Math.abs() pentru a avea întotdeauna dimensiuni pozitive
+            const width = currentX - startX;
+            const height = currentY - startY;
             currentElement.setAttribute("width", Math.abs(width));
             currentElement.setAttribute("height", Math.abs(height));
-            
-            // Ajustează poziția x,y în funcție de direcția de tragere
             currentElement.setAttribute("x", width < 0 ? currentX : startX);
             currentElement.setAttribute("y", height < 0 ? currentY : startY);
             break;
-            
         case 'ellipse':
-            // Pentru elipsă, calculează razele și centrul
-            // Razele sunt jumătate din lățime/înălțime
-            const rx = Math.abs(currentX - startX) / 2;  // Raza pe axa X
-            const ry = Math.abs(currentY - startY) / 2;  // Raza pe axa Y
-            
-            // Centrul elipsei este la mijlocul între punctul de start și poziția curentă
+            const rx = Math.abs(currentX - startX) / 2;
+            const ry = Math.abs(currentY - startY) / 2;
             currentElement.setAttribute("cx", startX + (currentX - startX) / 2);
             currentElement.setAttribute("cy", startY + (currentY - startY) / 2);
             currentElement.setAttribute("rx", rx);
@@ -472,19 +547,18 @@ svgContainer.onmousemove = (e) => {
  * Se execută când utilizatorul ridică butonul mouse-ului
  */
 svgContainer.onmouseup = () => {
-    isDrawing = false;        // Oprește modul de desenare
-    // Dacă există un element curent finalizat, îl adăugăm în stivă
+    isDrawing = false;
     if (currentElement) {
         elementStack.push(currentElement);
     }
-    currentElement = null;    // Eliberează referința la elementul curent
+    currentElement = null;
 
-    // Dacă eram în modul de drag pentru un element selectat, oprim drag-ul
     if (isDraggingElement) {
         isDraggingElement = false;
         dragData = null;
     }
-    // Dacă eram în procesul de desen al unei căi și am dat mouseup, nu o finalizăm automat (user trebuie dublu-click)
+    
+    removePreviewElement();
 };
 
 /**
@@ -495,9 +569,10 @@ svgContainer.onmouseup = () => {
  */
 svgContainer.onmouseleave = () => {
     if (isDrawing) {
-        isDrawing = false;     // Oprește modul de desenare
-        currentElement = null; // Eliberează referința la elementul curent
+        isDrawing = false;
+        currentElement = null;
     }
+    removePreviewElement();
 };
 
 // suport pentru anularea ultimelor n operații (undo) 
