@@ -114,6 +114,35 @@ document.getElementById('rectBtn').onclick = () => selectTool('rect');     // In
 document.getElementById('ellipseBtn').onclick = () => selectTool('ellipse');
 document.getElementById('pathBtn').onclick = () => selectTool('path');
 document.getElementById('selectBtn').onclick = () => selectTool('select');
+document.getElementById('exportPngBtn').onclick = () => exportSVGAsImage('png');
+document.getElementById('exportJpegBtn').onclick = () => exportSVGAsImage('jpeg');
+// Toggle export menu visibility
+const exportToggleBtn = document.getElementById('exportToggleBtn');
+const exportMenu = document.getElementById('exportMenu');
+if (exportToggleBtn && exportMenu) {
+    exportToggleBtn.addEventListener('click', (ev) => {
+        ev.stopPropagation();
+        const isShown = exportMenu.classList.toggle('show');
+        exportMenu.setAttribute('aria-hidden', (!isShown).toString());
+    });
+
+    // Close menu when clicking outside
+    document.addEventListener('click', (ev) => {
+        if (!exportMenu.classList.contains('show')) return;
+        if (!exportMenu.contains(ev.target) && ev.target !== exportToggleBtn) {
+            exportMenu.classList.remove('show');
+            exportMenu.setAttribute('aria-hidden', 'true');
+        }
+    });
+
+    // Close on Escape
+    document.addEventListener('keydown', (ev) => {
+        if (ev.key === 'Escape' && exportMenu.classList.contains('show')) {
+            exportMenu.classList.remove('show');
+            exportMenu.setAttribute('aria-hidden', 'true');
+        }
+    });
+}
 document.getElementById('deleteBtn').onclick = () => {
     if (selectedElement) {
         // Dacă elementul este în stivă, îl eliminăm și din stivă
@@ -595,6 +624,65 @@ document.addEventListener('mouseup', () => {
         activeHandle = null;
     }
 });
+
+/**
+ * Export SVG to raster image (png or jpeg)
+ * - Serializes the SVG, creates an Image, draws to canvas and triggers download.
+ * - JPEG uses white background to avoid black transparency.
+ */
+function exportSVGAsImage(format = 'png') {
+    try {
+        const svgEl = svgContainer;
+        const serializer = new XMLSerializer();
+        let source = serializer.serializeToString(svgEl);
+
+        // Add namespaces if missing
+        if (!source.match(/^<svg[^>]+xmlns="http:\/\/www\.w3\.org\/2000\/svg"/)) {
+            source = source.replace(/^<svg/, '<svg xmlns="http://www.w3.org/2000/svg"');
+        }
+        if (!source.match(/^<svg[^>]+xmlns:xlink="http:\/\/www\.w3\.org\/1999\/xlink"/)) {
+            source = source.replace(/^<svg/, '<svg xmlns:xlink="http://www.w3.org/1999/xlink"');
+        }
+
+        // Inline external CSS computed styles: a simple approach is to embed a minimal style block
+        // (For full fidelity you'd need to compute styles per element — acceptable for basic use.)
+
+        const blob = new Blob([source], { type: 'image/svg+xml;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const img = new Image();
+        const width = parseInt(svgEl.getAttribute('width')) || svgEl.clientWidth;
+        const height = parseInt(svgEl.getAttribute('height')) || svgEl.clientHeight;
+        img.onload = () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            if (format === 'jpeg') {
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            }
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            URL.revokeObjectURL(url);
+            const mime = format === 'jpeg' ? 'image/jpeg' : 'image/png';
+            const dataURL = canvas.toDataURL(mime);
+            const a = document.createElement('a');
+            a.href = dataURL;
+            a.download = `export.${format === 'jpeg' ? 'jpg' : 'png'}`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+        };
+        img.onerror = (err) => {
+            URL.revokeObjectURL(url);
+            alert('Eroare la generarea imaginii. Vezi consola pentru detalii.');
+            console.error(err);
+        };
+        img.src = url;
+    } catch (err) {
+        console.error('Export failed', err);
+        alert('Export eșuat: ' + err.message);
+    }
+}
 
 
 

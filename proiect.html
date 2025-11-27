@@ -6,7 +6,19 @@
     <title>Editor SVG Stefan Nicoleta-Cristina</title>
     <link rel="stylesheet" href="index.css">
 </head>
-<body> 
+<body>
+    <!-- Top export bar: fixed at top of page -->
+    <div class="top-export-bar">
+        <div class="top-export-inner">
+            <div class="export-dropdown">
+                <button id="exportToggleBtn" class="tool-btn">Export file ▾</button>
+                <div id="exportMenu" class="export-menu" aria-hidden="true">
+                    <button id="exportPngBtn" class="tool-btn">Export PNG</button>
+                    <button id="exportJpegBtn" class="tool-btn">Export JPEG</button>
+                </div>
+            </div>
+        </div>
+    </div>
     <div class="container">
         <header>
             <h2 id="trecereMouse">
@@ -52,6 +64,7 @@
                         <button id="deleteBtn" class="tool-btn">Șterge</button>
                     </div>
                 </div>
+                <!-- (export buttons removed from here — top export bar remains) -->
                 <!-- CERINȚA NOUĂ: Mesaj de avertizare -->
                 <div id="warningMessage" class="warning-message">
                     Selectați un instrument de desenare înainte de a începe!

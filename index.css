@@ -59,6 +59,69 @@ main {
     border-radius: 6px;
 }
 
+/* Separate export bar styling */
+/* export-bar removed (top fixed bar is used) */
+
+/* Top export bar (fixed) */
+.top-export-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(180deg, #ffffffcc, #f8f9faee);
+    border-bottom: 1px solid #e6e9ef;
+    z-index: 9999;
+    padding: 8px 0;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+}
+.top-export-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+/* Add top padding to body to avoid overlap with fixed bar */
+body {
+    padding-top: 56px;
+}
+
+/* Export dropdown styles */
+.export-dropdown {
+    position: relative;
+}
+.export-menu {
+    display: none;
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    background: #ffffff;
+    border: 1px solid #e6e9ef;
+    border-radius: 8px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+    padding: 8px;
+    flex-direction: column;
+    min-width: 160px;
+    z-index: 10000;
+}
+.export-menu.show {
+    display: flex;
+}
+.export-menu .tool-btn {
+    width: 100%;
+    text-align: left;
+    padding: 8px 12px;
+    border-radius: 6px;
+    background: transparent;
+    color: #333;
+    margin: 4px 0;
+}
+.export-menu .tool-btn:hover {
+    background: #f0f4ff;
+}
+
 .shape-buttons {
     margin-bottom: 15px;
     text-align: center;
